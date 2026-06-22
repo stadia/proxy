@@ -49,10 +49,12 @@ func NormalizedToResponses(req *core.NormalizedRequest, model config.ModelConfig
 
 	// System prompt becomes a "developer" role input.
 	if req.SystemPrompt != "" {
-		responsesReq.Input = append(responsesReq.Input, types.ResponsesInput{
-			Role:    "developer",
-			Content: json.RawMessage(`"` + req.SystemPrompt + `"`),
-		})
+		if b, err := json.Marshal(req.SystemPrompt); err == nil {
+			responsesReq.Input = append(responsesReq.Input, types.ResponsesInput{
+				Role:    "developer",
+				Content: json.RawMessage(b),
+			})
+		}
 	}
 
 	// Convert messages.
@@ -68,7 +70,9 @@ func NormalizedToResponses(req *core.NormalizedRequest, model config.ModelConfig
 		}
 
 		if content != "" {
-			input.Content = json.RawMessage(`"` + content + `"`)
+			if b, err := json.Marshal(content); err == nil {
+				input.Content = json.RawMessage(b)
+			}
 		}
 		responsesReq.Input = append(responsesReq.Input, input)
 	}
@@ -288,7 +292,9 @@ func normalizedToMessageRequest(req *core.NormalizedRequest) *types.MessageReque
 
 	// Set system prompt.
 	if req.SystemPrompt != "" {
-		anthropicReq.System = json.RawMessage(`"` + req.SystemPrompt + `"`)
+		if b, err := json.Marshal(req.SystemPrompt); err == nil {
+			anthropicReq.System = json.RawMessage(b)
+		}
 	}
 
 	// Set stream.
