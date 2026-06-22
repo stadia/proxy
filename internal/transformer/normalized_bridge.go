@@ -49,12 +49,10 @@ func NormalizedToResponses(req *core.NormalizedRequest, model config.ModelConfig
 
 	// System prompt becomes a "developer" role input.
 	if req.SystemPrompt != "" {
-		if b, err := json.Marshal(req.SystemPrompt); err == nil {
-			responsesReq.Input = append(responsesReq.Input, types.ResponsesInput{
-				Role:    "developer",
-				Content: json.RawMessage(b),
-			})
-		}
+		responsesReq.Input = append(responsesReq.Input, types.ResponsesInput{
+			Role:    "developer",
+			Content: rawJSONString(req.SystemPrompt),
+		})
 	}
 
 	// Convert messages.
@@ -70,9 +68,7 @@ func NormalizedToResponses(req *core.NormalizedRequest, model config.ModelConfig
 		}
 
 		if content != "" {
-			if b, err := json.Marshal(content); err == nil {
-				input.Content = json.RawMessage(b)
-			}
+			input.Content = rawJSONString(content)
 		}
 		responsesReq.Input = append(responsesReq.Input, input)
 	}
@@ -376,6 +372,14 @@ func normalizedToMessageRequest(req *core.NormalizedRequest) *types.MessageReque
 	}
 
 	return anthropicReq
+}
+
+func rawJSONString(s string) json.RawMessage {
+	b, err := json.Marshal(s)
+	if err != nil {
+		return json.RawMessage(`""`)
+	}
+	return json.RawMessage(b)
 }
 
 // joinMessageText concatenates the content of all messages for use as a

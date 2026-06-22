@@ -71,4 +71,24 @@ func TestNormalizedToResponses_SystemPromptWithNewline(t *testing.T) {
 	if err != nil {
 		t.Fatalf("json.Marshal failed: %v", err)
 	}
+
+	if len(responsesReq.Input) != 2 {
+		t.Fatalf("input count mismatch: got %d, want 2", len(responsesReq.Input))
+	}
+
+	var systemPrompt string
+	if err := json.Unmarshal(responsesReq.Input[0].Content, &systemPrompt); err != nil {
+		t.Fatalf("system prompt content was not valid JSON: %v", err)
+	}
+	if systemPrompt != req.SystemPrompt {
+		t.Fatalf("system prompt mismatch: got %q, want %q", systemPrompt, req.SystemPrompt)
+	}
+
+	var messageContent string
+	if err := json.Unmarshal(responsesReq.Input[1].Content, &messageContent); err != nil {
+		t.Fatalf("message content was not valid JSON: %v", err)
+	}
+	if messageContent != req.Messages[0].Content {
+		t.Fatalf("message content mismatch: got %q, want %q", messageContent, req.Messages[0].Content)
+	}
 }
